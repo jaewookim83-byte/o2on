@@ -594,7 +594,47 @@ function render(D) {
   function makeDonut(id,data,labels,colors){
     const filtered=labels.map((l,i)=>({l,v:data[i],c:colors[i]})).filter(x=>x.v>0);
     const total=filtered.reduce((s,x)=>s+x.v,0);
-    getOrCreateChart(id,{type:'doughnut',data:{labels:filtered.map(x=>x.l),datasets:[{data:filtered.map(x=>x.v),backgroundColor:filtered.map(x=>x.c),borderColor:'#fff',borderWidth:2,hoverOffset:4}]},options:{cutout:'50%',layout:{padding:50},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw}명 (${total?(c.raw/total*100).toFixed(1):'0'}%)`}}}},plugins:[{id:'dl_'+id,afterDatasetsDraw(chart){const ctx=chart.ctx,ds=chart.getDatasetMeta(0);ds.data.forEach((arc,i)=>{const v=filtered[i]?.v,lbl=filtered[i]?.l;if(!v)return;const pct=total?(v/total*100).toFixed(0):0;if(+pct<5)return;const ang=(arc.startAngle+arc.endAngle)/2,rM=(arc.outerRadius+arc.innerRadius)/2,xM=arc.x+Math.cos(ang)*rM,yM=arc.y+Math.sin(ang)*rM,rO=arc.outerRadius+16,xO=arc.x+Math.cos(ang)*rO,yO=arc.y+Math.sin(ang)*rO;ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 20px Noto Sans KR,sans-serif';ctx.fillStyle='#1c1c1a';ctx.fillText(`${v}`,xM,yM-9);ctx.font='17px Noto Sans KR,sans-serif';ctx.fillText(`${pct}%`,xM,yM+9);ctx.font='bold 17px Noto Sans KR,sans-serif';ctx.fillStyle='#333';ctx.fillText(lbl,xO,yO);ctx.restore();});}]});
+    getOrCreateChart(id, {
+      type:'doughnut',
+      data:{
+        labels: filtered.map(x=>x.l),
+        datasets:[{ data:filtered.map(x=>x.v), backgroundColor:filtered.map(x=>x.c), borderColor:'#fff', borderWidth:2, hoverOffset:4 }]
+      },
+      options:{
+        cutout:'50%',
+        layout:{ padding:50 },
+        plugins:{
+          legend:{ display:false },
+          tooltip:{ callbacks:{ label:c=>` ${c.label}: ${c.raw}명 (${total?(c.raw/total*100).toFixed(1):'0'}%)` }}
+        }
+      },
+      plugins:[{
+        id:'dl_'+id,
+        afterDatasetsDraw(chart){
+          const ctx=chart.ctx, ds=chart.getDatasetMeta(0);
+          ds.data.forEach((arc,i)=>{
+            const v=filtered[i]?.v, lbl=filtered[i]?.l;
+            if(!v) return;
+            const pct=total?(v/total*100).toFixed(0):0;
+            if(+pct<5) return;
+            const ang=(arc.startAngle+arc.endAngle)/2;
+            const rM=(arc.outerRadius+arc.innerRadius)/2;
+            const xM=arc.x+Math.cos(ang)*rM, yM=arc.y+Math.sin(ang)*rM;
+            const rO=arc.outerRadius+16;
+            const xO=arc.x+Math.cos(ang)*rO, yO=arc.y+Math.sin(ang)*rO;
+            ctx.save();
+            ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.font='bold 20px Noto Sans KR,sans-serif'; ctx.fillStyle='#1c1c1a';
+            ctx.fillText(`${v}`,xM,yM-9);
+            ctx.font='17px Noto Sans KR,sans-serif';
+            ctx.fillText(`${pct}%`,xM,yM+9);
+            ctx.font='bold 17px Noto Sans KR,sans-serif'; ctx.fillStyle='#333';
+            ctx.fillText(lbl,xO,yO);
+            ctx.restore();
+          });
+        }
+      }]
+    });
   }
 
   requestAnimationFrame(()=>{

@@ -332,8 +332,18 @@ function parseCSV(csvText) {
     const v = r[col-1]; return (v===null||v===undefined) ? '' : v;
   }
   function cn(col, row) {
-    const v = cv(col, row);
-    return Number(String(v).replace(/,/g,'')) || 0;
+    let s = String(cv(col, row)).trim();
+    if (s === '' || s === '-' || s === '—' || s === '–') return 0;
+    // 회계식 괄호 음수: (2,925,000) → -2925000
+    let neg = false;
+    if (s.charAt(0) === '(' && s.charAt(s.length-1) === ')') { neg = true; s = s.slice(1,-1); }
+    // 통화기호·쉼표·공백·원 제거
+    s = s.replace(/[,₩\s원]/g, '');
+    // 선행 마이너스도 처리 (문자열 '-' 접두)
+    if (s.charAt(0) === '-') { neg = true; s = s.slice(1); }
+    const n = Number(s);
+    if (isNaN(n)) return 0;
+    return neg ? -n : n;
   }
 
   // 날짜 파싱 — YYYY/MM/DD, YYYY-MM-DD, 엑셀 시리얼 모두 처리
